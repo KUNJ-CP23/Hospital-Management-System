@@ -6,12 +6,16 @@ namespace HMS.Controllers
 {
     public class DoctorController : Controller
     {
+        #region Config
         private IConfiguration _configuration;
 
         public DoctorController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
+        #endregion
+
+        #region SelectAllDoctor
         public IActionResult DoctorList()
         {
 
@@ -32,6 +36,8 @@ namespace HMS.Controllers
 
             return View(table);
         }
+        #endregion
+
 
         public IActionResult DoctorAddEdit()
         {

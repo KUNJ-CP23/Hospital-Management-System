@@ -141,6 +141,7 @@ namespace HMS.Controllers
         }
         #endregion
 
+        #region USER DROPDOWN
         public void UserDropDown()
         {
             string connectionString = this._configuration.GetConnectionString("MyConnectionString");
@@ -162,5 +163,6 @@ namespace HMS.Controllers
             }
             ViewBag.UserList = userList;
         }
+        #endregion
     }
 }
