@@ -12,7 +12,10 @@
         public DateTime Modified { get; set; }
 
     }
+
+    public class UserDropDownModel
+    {
+        public int UserID { get; set; }
+        public string UserName { get; set; }
+    }
 }
-
-
-//hello
