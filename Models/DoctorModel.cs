@@ -11,6 +11,7 @@
         public bool IsActive { get; set; } = true;
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
+
         public int UserID { get; set; }
 
     }
