@@ -43,11 +43,8 @@
 
                             <div class="mb-3">
                                 <label asp-for="UserID" class="form-label">User</label>
-                                <select asp-for="UserID" class="form-select" required>
-                                    <option value="">-- Select User --</option>
-                                    @* Example static options. Replace with a ViewBag or strongly typed list if needed *@
-                                    <option value="1">User 1</option>
-                                    <option value="2">User 2</option>
+                                <select asp-for="UserID" class="form-select" asp-items="@(new SelectList(ViewBag.UserList, "UserID", "UserName"))" required>
+                                    <option value=""> Select User </option>
                                 </select>
                             </div>
 

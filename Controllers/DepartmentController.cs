@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HMS.Controllers
 {
@@ -106,6 +107,8 @@ namespace HMS.Controllers
         #region Edit Department
         public IActionResult DepartmentAddEdit(int? DepartmentID)
         {
+
+            UserDropDown();
             DepartmentModel model = new DepartmentModel();
 
             if (DepartmentID != null)
@@ -116,8 +119,10 @@ namespace HMS.Controllers
 
                 SqlCommand command = sqlConnection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
+
                 command.CommandText = "PR_Department_SelectByPK";
                 command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
+                command.Parameters.Add("@UserID", SqlDbType.Int).Value = model.UserID;
 
                 SqlDataReader reader = command.ExecuteReader();
                 DataTable table = new DataTable();
@@ -135,5 +140,27 @@ namespace HMS.Controllers
             return View(model);
         }
         #endregion
+
+        public void UserDropDown()
+        {
+            string connectionString = this._configuration.GetConnectionString("MyConnectionString");
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            SqlCommand command2 = connection.CreateCommand();
+            command2.CommandType = System.Data.CommandType.StoredProcedure;
+            command2.CommandText = "PR_User_DropdownForUser";
+            SqlDataReader reader2 = command2.ExecuteReader();
+            DataTable dataTable2 = new DataTable();
+            dataTable2.Load(reader2);
+            List<UserDropDownModel> userList = new List<UserDropDownModel>();
+            foreach (DataRow data in dataTable2.Rows)
+            {
+                UserDropDownModel model = new UserDropDownModel();
+                model.UserID = Convert.ToInt32(data["UserID"]);
+                model.UserName = data["UserName"].ToString();
+                userList.Add(model);
+            }
+            ViewBag.UserList = userList;
+        }
     }
 }
