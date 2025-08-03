@@ -16,4 +16,9 @@
         public DateTime Modified { get; set; }
         public int UserID { get; set; }
     }
+    public class PatientDropDownModel
+    {
+        public int PatientID { get; set; }
+        public string Name { get; set; }
+    }
 }
