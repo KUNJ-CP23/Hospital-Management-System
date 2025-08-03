@@ -6,12 +6,16 @@ namespace HMS.Controllers
 {
     public class DoctorDepartmentController : Controller
     {
+        #region Config
         private IConfiguration _configuration;
 
         public DoctorDepartmentController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
+        #endregion
+
+        #region SelectAllDoctorDepartment
         public IActionResult DoctorDepartmentList()
         {
 
@@ -32,6 +36,19 @@ namespace HMS.Controllers
 
             return View(table);
         }
+        #endregion
+
+        #region DeleteDoctorDepartment
+        #endregion
+
+        #region AddDoctorDepartment
+        #endregion
+
+        #region EditDoctorDepartment
+        #endregion
+
+        #region UserDropDown
+        #endregion
         public IActionResult DoctorDepartmentAddEdit()
         {
             return View();

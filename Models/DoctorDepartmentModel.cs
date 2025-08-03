@@ -7,6 +7,6 @@
         public string DepartmentName { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
-        public string UserName { get; set; }
+        public int UserID { get; set; }
     }
 }
