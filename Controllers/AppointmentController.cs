@@ -135,7 +135,7 @@ namespace HMS.Controllers
                 foreach (DataRow dr in table.Rows)
                 {
                     model.AppointmentId = Convert.ToInt32(dr["AppointmentId"]);
-                    model.AppointmentDate = dr["AppointmentDate"].ToString();
+                    model.AppointmentDate = Convert.ToDateTime(dr["AppointmentDate"]);
                     model.AppointmentStatus = dr["AppointmentStatus"].ToString();
                     model.Description = dr["Description"].ToString();
                     model.SpecialRemarks = dr["SpecialRemarks"].ToString();

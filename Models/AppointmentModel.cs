@@ -3,7 +3,7 @@
     public class AppointmentModel
     {
         public int AppointmentId { get; set; }
-        public string AppointmentDate { get; set; }
+        public DateTime AppointmentDate { get; set; }
         public string AppointmentStatus { get; set; }
         public string Description { get; set; }
         public string SpecialRemarks { get; set; }
