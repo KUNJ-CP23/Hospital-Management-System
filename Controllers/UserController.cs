@@ -78,7 +78,7 @@ namespace HMS.Controllers
                 
             }
             
-            catch (SqlException ex) when (ex.Number == 547) // FK constraint violation
+            catch (SqlException ex) when (ex.Number == 547)
             {
                 TempData["ErrorMessage"] = "❌ Cannot delete this user. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("UserList");
