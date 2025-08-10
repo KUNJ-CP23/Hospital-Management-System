@@ -73,13 +73,19 @@ namespace HMS.Controllers
 
                     command.ExecuteNonQuery();
                 }
-
-                TempData["SuccessMessage"] = "User deleted successfully!";
+                TempData["SuccessMessage"] = "✅ User deleted successfully!";
+                return RedirectToAction("UserList");
+                
+            }
+            
+            catch (SqlException ex) when (ex.Number == 547)
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this user. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("UserList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the user: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the user: " + ex.Message;
                 return RedirectToAction("UserList");
             }
         }

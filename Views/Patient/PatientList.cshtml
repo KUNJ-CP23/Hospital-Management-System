@@ -2,7 +2,7 @@
 @model System.Data.DataTable;
 
 <div class="pagetitle">
-    <h1>Doctor List</h1>
+    <h1>Patient List</h1>
     <nav>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="index.html">Home</a></li>
@@ -18,46 +18,79 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Datatables</h5>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>PatientID</th>
-                                <th>Name</th>
-                                <th>DateOfBirth</th>
-                                <th>Gender</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                                <th>City</th>
-                                <th>State</th>
-                                <th>IsActive</th>
-                                <th>Created</th>
-                                <th>Modified</th>
-                                <th>UserName</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (DataRow dr in Model.Rows)
-                            {
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    <h5 class="card-title">Patient Table</h5>
+
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-striped table-hover table-bordered align-middle">
+                            <thead class="table-dark text-center">
                                 <tr>
-                                    <td>@dr["PatientID"]</td>
-                                    <td>@dr["Name"]</td>
-                                    <td>@dr["DateOfBirth"]</td>
-                                    <td>@dr["Phone"]</td>
-                                    <td>@dr["Email"]</td>
-                                    <td>@dr["Address"]</td>
-                                    <td>@dr["City"]</td>
-                                    <td>@dr["State"]</td>
-                                    <td>@dr["IsActive"]</td>
-                                    <td>@dr["Created"]</td>
-                                    <td>@dr["Modified"]</td>
-                                    <td>@dr["UserName"]</td>
+                                    <th>PID</th>
+                                    <th>PName</th>
+                                    <th>DateOfBirth</th>
+                                    <th>Gender</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>IsActive</th>
+                                    @* <th>Created</th>
+                                    <th>Modified</th> *@
+                                    <th>UserName</th>
+                                    <th>Edit/Delete</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <!-- End Table with stripped rows -->
+                            </thead>
+                            <tbody>
+                                @foreach (DataRow dr in Model.Rows)
+                                {
+                                    <tr>
+                                        <td>@dr["PatientID"]</td>
+                                        <td>@dr["Name"]</td>
+                                        <td>@Convert.ToDateTime(dr["DateOfBirth"]).ToString("dd/MM/yyyy")</td>
+                                        <td>@dr["Gender"]</td>
+                                        <td>@dr["Email"]</td>
+                                        <td>@dr["Phone"]</td>
+                                        <td>@dr["Address"]</td>
+                                        <td>@dr["City"]</td>
+                                        <td>@dr["State"]</td>
+                                        <td>@dr["IsActive"]</td>
+                                        @* <td>@Convert.ToDateTime(dr["Created"]).ToString("dd/MM/yyyy")</td>
+                                        <td>@Convert.ToDateTime(dr["Modified"]).ToString("dd/MM/yyyy")</td> *@
+                                        <td>@dr["UserName"]</td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="@Url.Action("PatientAddEdit", "Patient", new { PatientID = dr["PatientID"] })"
+                                                   class="btn btn-outline-primary btn-sm"
+                                                   title="Edit Patient">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-outline-danger btn-sm delete-patient"
+                                                        data-id="@dr["PatientID"]"
+                                                        title="Delete Patient">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
@@ -65,3 +98,29 @@
         </div>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".delete-patient").forEach(button => {
+            button.addEventListener("click", function () {
+                const patientId = this.getAttribute("data-id");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/Patient/PatientDelete?PatientID=${patientId}`;
+                    }
+                });
+            });
+        });
+    });
+</script>

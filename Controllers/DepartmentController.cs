@@ -70,7 +70,7 @@ namespace HMS.Controllers
 
         #endregion
 
-        #region Add Department
+        #region AddDepartment
 
         [HttpPost]
 
@@ -104,7 +104,7 @@ namespace HMS.Controllers
         }
         #endregion
 
-        #region Edit Department
+        #region EditDepartment
         public IActionResult DepartmentAddEdit(int? DepartmentID)
         {
 

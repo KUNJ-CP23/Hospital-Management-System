@@ -14,4 +14,9 @@
         public int UserID { get; set; }
 
     }
+    public class DoctorDropDownModel
+    {
+        public int DoctorID { get; set; }
+        public string Name { get; set; }
+    }
 }
