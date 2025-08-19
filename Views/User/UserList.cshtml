@@ -30,7 +30,7 @@
         margin-bottom: 15px;
         display: flex;
         gap: 8px;
-        margin-inline-start:77%;
+        margin-inline-start:65%;
     }
 
     /* Smaller, rounded buttons */
@@ -78,6 +78,12 @@
     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-secondary btn-custom">
         <i class="bi bi-speedometer2"></i> Dashboard
     </a>
+    <a class="btn btn-success btn-custom ms-2"
+       asp-controller="ExportToExcel"
+       asp-action="ExportToExcel"
+       asp-route-sp="PR_User_SelectAll">
+        Export to Excel
+    </a>
 </div>
 
 <section class="section">
@@ -109,6 +115,7 @@
                                     <td>@dr["MobileNo"]</td>
                                     <td>@dr["IsActive"]</td>
                                     <td>
+
                                         <a href="@Url.Action("UserAddEdit", "User", new { UserID = dr["UserID"] })"
                                            class="btn btn-primary btn-sm btn-custom"
                                            title="Edit User">
