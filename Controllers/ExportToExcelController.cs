@@ -23,7 +23,7 @@ namespace HMS.Controllers
 
                 using (var workbook = new XLWorkbook())
                 {
-                    workbook.Worksheets.Add(dt, "NameOfYourExcelFile");
+                    workbook.Worksheets.Add(dt, "ExcelFile");
 
                     using (var stream = new MemoryStream())
                     {
