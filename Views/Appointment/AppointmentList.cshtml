@@ -18,43 +18,61 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Datatables</h5>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>AppointmentId</th>
-                                <th>AppointmentDate</th>
-                                <th>AppointmentStatus</th>
-                                <th>Description</th>
-                                <th>SpecialRemarks</th>
-                                <th>Created</th>
-                                <th>Modified</th>
-                                <th>TotalConsultedAmount</th>
-                                <th>PatientName</th>
-                                <th>DoctorName</th>
-                                <th>UserName</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (DataRow dr in Model.Rows)
-                            {
+                    <h5 class="card-title">Appointment Table</h5>
+
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-striped table-hover table-bordered align-middle">
+                            <thead class="table-dark text-center">
                                 <tr>
-                                    <td>@dr["AppointmentId"]</td>
-                                    <td>@dr["AppointmentDate"]</td>
-                                    <td>@dr["AppointmentStatus"]</td>
-                                    <td>@dr["Description"]</td>
-                                    <td>@dr["SpecialRemarks"]</td>
-                                    <td>@dr["Created"]</td>
-                                    <td>@dr["Modified"]</td>
-                                    <td>@dr["TotalConsultedAmount"]</td>
-                                    <td>@dr["PatientName"]</td>
-                                    <td>@dr["DoctorName"]</td>
-                                    <td>@dr["UserName"]</td>
+                                    <th>AID</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                    <th>Remarks</th>
+                                    @* <th>Created</th>
+                                    <th>Modified</th> *@
+                                    <th>Total Amount</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>User</th>
+                                    <th>Edit/Delete</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                    <!-- End Table with stripped rows -->
+                            </thead>
+                            <tbody>
+                                @foreach (DataRow dr in Model.Rows)
+                                {
+                                    <tr>
+                                        <td>@dr["AppointmentId"]</td>
+                                        <td>@Convert.ToDateTime(dr["AppointmentDate"]).ToString("dd/MM/yyyy")</td>
+                                        <td>@dr["AppointmentStatus"]</td>
+                                        <td>@dr["Description"]</td>
+                                        <td>@dr["SpecialRemarks"]</td>
+                                        @* <td>@Convert.ToDateTime(dr["Created"]).ToString("dd/MM/yyyy")</td>
+                                        <td>@Convert.ToDateTime(dr["Modified"]).ToString("dd/MM/yyyy")</td> *@
+                                        <td>@dr["TotalConsultedAmount"]</td>
+                                        <td>@dr["PatientName"]</td>
+                                        <td>@dr["DoctorName"]</td>
+                                        <td>@dr["UserName"]</td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="@Url.Action("AppointmentAddEdit", "Appointment", new { AppointmentId = dr["AppointmentId"] })"
+                                                   class="btn btn-outline-primary btn-sm"
+                                                   title="Edit Appointment">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-outline-danger btn-sm delete-appointment"
+                                                        data-id="@dr["AppointmentId"]"
+                                                        title="Delete Appointment">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
@@ -62,3 +80,29 @@
         </div>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".delete-appointment").forEach(button => {
+            button.addEventListener("click", function () {
+                const appointmentId = this.getAttribute("data-id");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This appointment will be deleted permanently!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/Appointment/AppointmentDelete?AppointmentId=${appointmentId}`;
+                    }
+                });
+            });
+        });
+    });
+</script>

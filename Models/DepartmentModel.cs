@@ -10,4 +10,9 @@
         public DateTime Modified { get; set; }
         public int UserID { get; set; }
     }
+    public class DepartmentDropDownModel
+    {
+        public int DepartmentID { get; set; }
+        public string DepartmentName { get; set; }
+    }
 }
