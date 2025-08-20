@@ -21,48 +21,56 @@
 
                             <div class="mb-3">
                                 <label asp-for="AppointmentDate" class="form-label">Appointment Date & Time</label>
-                                <input asp-for="AppointmentDate" type="datetime" value="" class="form-control" required />
+                                <input asp-for="AppointmentDate" type="datetime" value="" class="form-control" />
+                                <span asp-validation-for="AppointmentDate" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="AppointmentStatus" class="form-label">Status</label>
-                                <input asp-for="AppointmentStatus" type="text" class="form-control" placeholder="Enter status (e.g., Confirmed, Cancelled)" required />
+                                <input asp-for="AppointmentStatus" type="text" class="form-control" placeholder="Enter status (e.g., Confirmed, Cancelled)"  />
+                                <span asp-validation-for="AppointmentStatus" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="Description" class="form-label">Description</label>
                                 <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="SpecialRemarks" class="form-label">Special Remarks</label>
                                 <input asp-for="SpecialRemarks" type="text" class="form-control" />
+                                <span asp-validation-for="SpecialRemarks" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="TotalConsultedAmount" class="form-label">Total Consulted Amount</label>
-                                <input asp-for="TotalConsultedAmount" type="number" step="0.01" class="form-control" required />
+                                <input asp-for="TotalConsultedAmount" type="number" step="0.01" class="form-control" />
+                                <span asp-validation-for="TotalConsultedAmount" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="DoctorID" class="form-label">Doctor</label>
-                                <select asp-for="DoctorID" class="form-select" asp-items="@(new SelectList(ViewBag.DoctorList, "DoctorID", "Name"))" required>
+                                <select asp-for="DoctorID" class="form-select" asp-items="@(new SelectList(ViewBag.DoctorList, "DoctorID", "Name"))">
                                     <option value="">Select Doctor</option>
                                 </select>
+                                <span asp-validation-for="DoctorID" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="PatientID" class="form-label">Patient</label>
-                                <select asp-for="PatientID" class="form-select" asp-items="@(new SelectList(ViewBag.PatientList, "PatientID", "Name"))" required>
+                                <select asp-for="PatientID" class="form-select" asp-items="@(new SelectList(ViewBag.PatientList, "PatientID", "Name"))" >
                                     <option value="">Select Patient</option>
                                 </select>
+                                <span asp-validation-for="PatientID" class="text-danger"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="UserID" class="form-label">User</label>
-                                <select asp-for="UserID" class="form-select" asp-items="@(new SelectList(ViewBag.UserList, "UserID", "UserName"))" required>
+                                <select asp-for="UserID" class="form-select" asp-items="@(new SelectList(ViewBag.UserList, "UserID", "UserName"))" >
                                     <option value="">Select User</option>
                                 </select>
+                                <span asp-validation-for="UserID" class="text-danger"></span>
                             </div>
 
                             <div class="text-end">
@@ -79,3 +87,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}
