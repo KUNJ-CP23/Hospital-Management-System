@@ -1,4 +1,6 @@
-﻿using HMS.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using HMS.Helpers;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Data;
@@ -130,19 +132,13 @@ namespace HMS.Controllers
 
         [HttpGet]
 
-        public IActionResult UserAddEdit(int? UserID)
+        public IActionResult UserAddEdit(string UserID)
         {
-            //if (UserID == null)
-            //{
-            //    //var m = new UserModel
-            //    //{
-            //    //};
-            //    return View(new UserModel());
-            //}
-
+            var decryptedUserId = HMS.Helpers.UrlEncryptor.Decrypt(UserID);
+            int userIdInt = Convert.ToInt32(decryptedUserId);
             UserModel model = new UserModel();
 
-            if(UserID != null)
+            if(userIdInt != null)
             {
                 string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
                 SqlConnection sqlConnection = new SqlConnection(ConnectionString);
@@ -151,7 +147,7 @@ namespace HMS.Controllers
                 SqlCommand command = sqlConnection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "PR_User_SelectByPK";
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
+                command.Parameters.Add("@UserID", SqlDbType.Int).Value = userIdInt;
 
                 //we got the id now we have to load its all data 
                 SqlDataReader reader = command.ExecuteReader();

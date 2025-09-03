@@ -1,5 +1,6 @@
 ﻿@using System.Data;
 @model System.Data.DataTable;
+@using HMS.Helpers;
 
 <style>
     body {
@@ -39,14 +40,6 @@
         font-size: 13px;
         border-radius: 20px;
     }
-
-    /* Table styling */
-    /* .table-container {
-        background-color: #e6f2ff;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
-    } */
 
     .table thead {
         background-color: #e9ecef; /* Professional light grey */
@@ -111,8 +104,6 @@
                 </div>
             }
 
-            <!-- Your existing table code below... -->
-
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     // Auto dismiss alert after 10 seconds
@@ -124,7 +115,7 @@
 
                             setTimeout(() => alertBox.remove(), 1000); // remove after fade-out
                         }
-                    }, 5000); // 10000ms = 10 seconds
+                    }, 3000);
                 });
             </script>
 
@@ -151,6 +142,8 @@
                             }
                             @foreach (DataRow dr in Model.Rows)
                             {
+                                var encryptedId = UrlEncryptor.Encrypt(dr["UserID"].ToString());
+                                <!-- Encrypt UserID -->
                                 <tr>
                                     <td>@srNo</td>   <!-- Serial Number instead of UserID -->
                                     <td>@dr["UserName"]</td>
@@ -159,14 +152,14 @@
                                     <td>@dr["MobileNo"]</td>
                                     <td>@dr["IsActive"]</td>
                                     <td>
-                                        <a href="@Url.Action("UserAddEdit", "User", new { UserID = dr["UserID"] })"
+                                        <a href="@Url.Action("UserAddEdit", "User", new { UserID = encryptedId })"
                                            class="btn btn-primary btn-sm btn-custom"
                                            title="Edit User">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>
                                         <button type="button"
                                                 class="btn btn-danger btn-sm btn-custom delete-user"
-                                                data-id="@dr["UserID"]"
+                                                data-id="@encryptedId"
                                                 title="Delete User">
                                             <i class="bi bi-trash-fill"></i>
                                         </button>
@@ -175,6 +168,41 @@
                                 srNo++; // increment counter
                             }
                         </tbody>
+
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".delete-user").forEach(button => {
+            button.addEventListener("click", function () {
+                const userId = this.getAttribute("data-id");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/User/UserDelete?UserID=${userId}`;
+                    }
+                });
+            });
+        });
+    });
+</script>
 
 
                         @* <thead>
@@ -215,37 +243,3 @@
                                 </tr>
                             }
                         </tbody> *@
-
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".delete-user").forEach(button => {
-            button.addEventListener("click", function () {
-                const userId = this.getAttribute("data-id");
-
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = `/User/UserDelete?UserID=${userId}`;
-                    }
-                });
-            });
-        });
-    });
-</script>
