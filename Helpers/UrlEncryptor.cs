@@ -6,7 +6,7 @@ namespace HMS.Helpers
     //kept this class static so can be accessed at multiple places without instantiating it again and again
     public static class UrlEncryptor
     {
-        private static readonly string EncryptionKey = "pjsKGLNYrMqU6ny4";
+        private static readonly string EncryptionKey = "pjsKGLNYrMqU6nyu";
 
         #region EncryptMethod
         public static string Encrypt(string text)

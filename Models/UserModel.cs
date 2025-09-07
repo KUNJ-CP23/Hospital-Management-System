@@ -9,9 +9,9 @@ namespace HMS.Models
         public string UserName { get; set; }
         [Required(ErrorMessage = "Please enter the password")]
         public string Password { get; set; }
-        [Required(ErrorMessage ="Email pan nay bhulta")]
+        [Required(ErrorMessage ="Enter your Email")]
         public string Email { get; set; }
-        [Required(ErrorMessage ="Gimme the phone number")]
+        [Required(ErrorMessage ="Enter the phone number")]
         public string MobileNo { get; set; }
         public bool IsActive { get; set; }
         public DateTime Created { get; set; }

@@ -1,10 +1,12 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using HMS.Helpers;
 using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
 using System.Reflection;
 
 namespace HMS.Controllers
@@ -23,7 +25,7 @@ namespace HMS.Controllers
 
         #region SelectAllUser
 
-        public IActionResult UserList()
+        public IActionResult UserList(string UserName="", string Email="", string MobileNo="")
         {
 
             //make connection string in appsettings.json file
@@ -40,8 +42,25 @@ namespace HMS.Controllers
             SqlCommand command = sqlConnection.CreateCommand();
 
             //below command type and command text is to mention the type and name of the SP
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_User_SelectAll";
+            //command.CommandType = CommandType.StoredProcedure;
+            //command.CommandText = "PR_User_SelectAll";
+
+            if (string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(MobileNo))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_SelectAll";
+            }
+            else
+            {
+                // If any filter → call Search
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_Search";
+
+                command.Parameters.AddWithValue("@UserName", string.IsNullOrEmpty(UserName) ? "" : UserName);
+                command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(Email) ? "" : Email);
+                command.Parameters.AddWithValue("@MobileNo", string.IsNullOrEmpty(MobileNo) ? "" : MobileNo);
+            }
+
 
             //reader is used to read the data from the command
             SqlDataReader reader = command.ExecuteReader();
@@ -55,15 +74,22 @@ namespace HMS.Controllers
             DataTable table = new DataTable();
             table.Load(reader);
 
+            ViewBag.UserName = UserName;
+            ViewBag.Email = Email;
+            ViewBag.MobileNo = MobileNo;
+
             return View(table);
         }
         #endregion
 
         #region DeleteUser
-        public IActionResult UserDelete(int UserID)
+        public IActionResult UserDelete(string UserID)
         {
             try
             {
+                // 🔓 Decrypt the UserID first
+                int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
+
                 string connectionString = _configuration.GetConnectionString("MyConnectionString");
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -71,16 +97,15 @@ namespace HMS.Controllers
                     SqlCommand command = connection.CreateCommand();
                     command.CommandType = CommandType.StoredProcedure;
                     command.CommandText = "PR_User_DeleteByPK";
-                    command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
+                    command.Parameters.Add("@UserID", SqlDbType.Int).Value = decryptedUserId;
 
                     command.ExecuteNonQuery();
                 }
+
                 TempData["SuccessMessage"] = "✅ User deleted successfully!";
                 return RedirectToAction("UserList");
-                
             }
-            
-            catch (SqlException ex) when (ex.Number == 547)
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint
             {
                 TempData["ErrorMessage"] = "❌ Cannot delete this user. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("UserList");
@@ -132,14 +157,15 @@ namespace HMS.Controllers
 
         [HttpGet]
 
-        public IActionResult UserAddEdit(string UserID)
+        public IActionResult UserAddEdit(string? UserID)
         {
-            var decryptedUserId = HMS.Helpers.UrlEncryptor.Decrypt(UserID);
-            int userIdInt = Convert.ToInt32(decryptedUserId);
+            
             UserModel model = new UserModel();
 
-            if(userIdInt != null)
+            if(UserID != null)
             {
+                var decryptedUserId = HMS.Helpers.UrlEncryptor.Decrypt(UserID);
+                int userIdInt = Convert.ToInt32(decryptedUserId);
                 string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
                 SqlConnection sqlConnection = new SqlConnection(ConnectionString);
                 sqlConnection.Open();
