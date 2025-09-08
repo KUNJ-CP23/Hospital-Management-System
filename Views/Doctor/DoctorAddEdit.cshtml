@@ -22,12 +22,52 @@
         .header-actions a {
             margin-left: 8px;
         }
+
+        .breadcrumb-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item a {
+            text-decoration: none;
+            color: #25317d;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 <body>
     <div class="container mt-1">
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-container">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Dashboard">Hospital Management</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Doctor" asp-action="DoctorList">Doctor</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                @(Model.DoctorID == 0 ? "Add" : "Edit")
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
                 <div class="card shadow-sm">
                     <div class="card-header">
                         <h4 class="mb-0">
@@ -107,6 +147,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

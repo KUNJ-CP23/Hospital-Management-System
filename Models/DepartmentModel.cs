@@ -17,6 +17,7 @@ namespace HMS.Models
         public DateTime Modified { get; set; }
         [Required(ErrorMessage = "Please select a user")]
         public int? UserID { get; set; }
+
     }
     public class DepartmentDropDownModel
     {

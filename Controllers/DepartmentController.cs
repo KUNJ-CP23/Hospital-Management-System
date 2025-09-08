@@ -59,7 +59,6 @@ namespace HMS.Controllers
         #endregion
 
         #region DeleteDepartment
-
         public IActionResult DepartmentDelete(string DepartmentID)
         {
             try

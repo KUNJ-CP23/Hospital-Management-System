@@ -1,7 +1,13 @@
-﻿using HMS.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using HMS.Helpers;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HMS.Controllers
 {
@@ -17,7 +23,7 @@ namespace HMS.Controllers
         #endregion
 
         #region SelectAllPatient
-        public IActionResult PatientList()
+        public IActionResult PatientList(string Name = "", string Email = "", string City = "")
         {
 
             string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
@@ -27,13 +33,29 @@ namespace HMS.Controllers
 
             SqlCommand command = sqlConnection.CreateCommand();
 
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_Patient_SelectAll";
+            if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(City))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Patient_SelectAll";
+            }
+            else
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Patient_Search";
+
+                command.Parameters.AddWithValue("@Name", string.IsNullOrEmpty(Name) ? "" : Name);
+                command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(Email) ? "" : Email);
+                command.Parameters.AddWithValue("@City", string.IsNullOrEmpty(City) ? "" : City);
+            }
 
             SqlDataReader reader = command.ExecuteReader();
 
             DataTable table = new DataTable();
             table.Load(reader);
+
+            ViewBag.Name = Name;
+            ViewBag.Email = Email;
+            ViewBag.City = City;
 
             return View(table);
         }
@@ -57,15 +79,21 @@ namespace HMS.Controllers
                     command.ExecuteNonQuery();
                 }
 
-                TempData["SuccessMessage"] = "Patient deleted successfully!";
+                TempData["SuccessMessage"] = "✅ Patient deleted successfully!";
+                return RedirectToAction("PatientList");
+            }
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint violation
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this patient. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("PatientList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the patient: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the patient: " + ex.Message;
                 return RedirectToAction("PatientList");
             }
         }
+
         #endregion
 
         #region AddPatient
@@ -108,46 +136,48 @@ namespace HMS.Controllers
         #endregion
 
         #region EditPatient
+        [HttpGet]
         public IActionResult PatientAddEdit(int? PatientID)
         {
-
-            UserKaDropDown();
+            UserKaDropDown(); // load User dropdown
             PatientModel model = new PatientModel();
 
             if (PatientID != null)
             {
-                string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
-                SqlConnection sqlConnection = new SqlConnection(ConnectionString);
-                sqlConnection.Open();
 
-                SqlCommand command = sqlConnection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.CommandText = "PR_Patient_SelectByPK";
-                command.Parameters.Add("@PatientID", SqlDbType.Int).Value = PatientID;
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = model.UserID;
-
-                SqlDataReader reader = command.ExecuteReader();
-                DataTable table = new DataTable();
-                table.Load(reader);
-
-                foreach (DataRow dr in table.Rows)
+                string connectionString = this._configuration.GetConnectionString("MyConnectionString");
+                using (SqlConnection sqlConnection = new SqlConnection(connectionString))
                 {
-                    model.PatientID = Convert.ToInt32(dr["PatientID"]);
-                    model.Name = dr["Name"].ToString();
-                    model.DateOfBirth = Convert.ToDateTime(dr["DateOfBirth"]);
-                    model.Gender = dr["Gender"].ToString();
-                    model.Email = dr["Email"].ToString();
-                    model.Phone = dr["Phone"].ToString();
-                    model.Address = dr["Address"].ToString();
-                    model.City = dr["City"].ToString();
-                    model.State = dr["State"].ToString();
-                    model.IsActive = Convert.ToBoolean(dr["IsActive"]);
-                    model.UserID = Convert.ToInt32(dr["UserID"]);
+                    sqlConnection.Open();
+
+                    SqlCommand command = sqlConnection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_Patient_SelectByPK";
+                    command.Parameters.Add("@PatientID", SqlDbType.Int).Value = PatientID;
+
+                    SqlDataReader reader = command.ExecuteReader();
+                    DataTable table = new DataTable();
+                    table.Load(reader);
+
+                    foreach (DataRow dr in table.Rows)
+                    {
+                        model.PatientID = Convert.ToInt32(dr["PatientID"]);
+                        model.Name = dr["Name"].ToString();
+                        model.DateOfBirth = Convert.ToDateTime(dr["DateOfBirth"]);
+                        model.Gender = dr["Gender"].ToString();
+                        model.Email = dr["Email"].ToString();
+                        model.Phone = dr["Phone"].ToString();
+                        model.Address = dr["Address"].ToString();
+                        model.City = dr["City"].ToString();
+                        model.State = dr["State"].ToString();
+                        model.IsActive = Convert.ToBoolean(dr["IsActive"]);
+                        model.UserID = Convert.ToInt32(dr["UserID"]);
+                    }
                 }
             }
             return View(model);
         }
+
         #endregion
 
         #region UserDropDown

@@ -8,6 +8,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Net;
 using System.Reflection;
+using System.Web;
 
 namespace HMS.Controllers
 {
@@ -88,8 +89,9 @@ namespace HMS.Controllers
             try
             {
                 // 🔓 Decrypt the UserID first
-                int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
-
+                //int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
+                string decodedUserId = HttpUtility.UrlDecode(UserID); // Decode first
+                int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(decodedUserId));
                 string connectionString = _configuration.GetConnectionString("MyConnectionString");
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {

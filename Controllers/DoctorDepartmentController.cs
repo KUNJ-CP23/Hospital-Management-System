@@ -17,7 +17,7 @@ namespace HMS.Controllers
         #endregion
 
         #region SelectAllDoctorDepartment
-        public IActionResult DoctorDepartmentList()
+        public IActionResult DoctorDepartmentList(string DoctorName = "", string DepartmentName = "")
         {
 
             string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
@@ -26,14 +26,26 @@ namespace HMS.Controllers
             sqlConnection.Open();
 
             SqlCommand command = sqlConnection.CreateCommand();
+            if (string.IsNullOrEmpty(DoctorName) && string.IsNullOrEmpty(DepartmentName))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_DoctorDepartment_SelectAll";
+            }
+            else
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_DoctorDepartment_Search";
 
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_DoctorDepartment_SelectAll";
+                command.Parameters.AddWithValue("@DoctorName", string.IsNullOrEmpty(DoctorName) ? "" : DoctorName);
+                command.Parameters.AddWithValue("@DepartmentName", string.IsNullOrEmpty(DepartmentName) ? "" : DepartmentName);
+            }
 
             SqlDataReader reader = command.ExecuteReader();
-
             DataTable table = new DataTable();
             table.Load(reader);
+
+            ViewBag.DoctorName = DoctorName;
+            ViewBag.DepartmentName = DepartmentName;
 
             return View(table);
         }
@@ -56,12 +68,17 @@ namespace HMS.Controllers
                     command.ExecuteNonQuery();
                 }
 
-                TempData["SuccessMessage"] = "DoctorDepartment deleted successfully!";
+                TempData["SuccessMessage"] = "✅ Record deleted successfully!";
+                return RedirectToAction("DoctorDepartmentList");
+            }
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint violation
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this record. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("DoctorDepartmentList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the doctordepartment: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the record: " + ex.Message;
                 return RedirectToAction("DoctorDepartmentList");
             }
         }

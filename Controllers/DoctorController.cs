@@ -138,6 +138,7 @@ namespace HMS.Controllers
         #region EditDoctor
 
         [HttpGet]
+
         public IActionResult DoctorAddEdit(string? DoctorID)
         {
             UserNuDropDown(); // load User dropdown

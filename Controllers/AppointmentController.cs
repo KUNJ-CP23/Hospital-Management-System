@@ -1,7 +1,13 @@
-﻿using HMS.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using HMS.Helpers;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HMS.Controllers
 {
@@ -17,7 +23,7 @@ namespace HMS.Controllers
         #endregion
 
         #region SelectAllAppointment
-        public IActionResult AppointmentList()
+        public IActionResult AppointmentList(string AppointmentStatus = "", string PatientName = "", string DoctorName = "")
         {
 
             string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
@@ -26,14 +32,28 @@ namespace HMS.Controllers
             sqlConnection.Open();
 
             SqlCommand command = sqlConnection.CreateCommand();
+            if (string.IsNullOrEmpty(AppointmentStatus) && string.IsNullOrEmpty(PatientName) && string.IsNullOrEmpty(DoctorName))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Appointment_SelectAll";
+            }
+            else
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Appointment_Search";
 
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_Appointment_SelectAll";
+                command.Parameters.AddWithValue("@AppointmentStatus", string.IsNullOrEmpty(AppointmentStatus) ? "" : AppointmentStatus);
+                command.Parameters.AddWithValue("@PName", string.IsNullOrEmpty(PatientName) ? "" : PatientName);
+                command.Parameters.AddWithValue("@DName", string.IsNullOrEmpty(DoctorName) ? "" : DoctorName);
+            }
 
             SqlDataReader reader = command.ExecuteReader();
 
             DataTable table = new DataTable();
             table.Load(reader);
+            ViewBag.AppointmentStatus = AppointmentStatus;
+            ViewBag.PatientName = PatientName;
+            ViewBag.DoctorName = DoctorName;
 
             return View(table);
         }
@@ -56,12 +76,17 @@ namespace HMS.Controllers
                     command.ExecuteNonQuery();
                 }
 
-                TempData["SuccessMessage"] = "Appointment deleted successfully!";
+                TempData["SuccessMessage"] = "✅ Appointment deleted successfully!";
                 return RedirectToAction("AppointmentList");
+            }
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint violation
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this patient. It is referenced somewhere else (foreign key constraint).";
+                return RedirectToAction("PatientList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the appointment: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the appointment: " + ex.Message;
                 return RedirectToAction("AppointmentList");
             }
         }
@@ -126,7 +151,6 @@ namespace HMS.Controllers
 
                 command.CommandText = "PR_Appointment_SelectByPK";
                 command.Parameters.Add("@AppointmentId", SqlDbType.Int).Value = AppointmentId;
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = model.UserID;
 
                 SqlDataReader reader = command.ExecuteReader();
                 DataTable table = new DataTable();
