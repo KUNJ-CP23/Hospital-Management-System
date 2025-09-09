@@ -1,9 +1,14 @@
-﻿using HMS.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using HMS.Helpers;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
 using System.Reflection;
+using System.Web;
 
 namespace HMS.Controllers
 {
@@ -21,7 +26,7 @@ namespace HMS.Controllers
 
         #region SelectAllUser
 
-        public IActionResult UserList()
+        public IActionResult UserList(string UserName="", string Email="", string MobileNo="")
         {
 
             //make connection string in appsettings.json file
@@ -38,8 +43,25 @@ namespace HMS.Controllers
             SqlCommand command = sqlConnection.CreateCommand();
 
             //below command type and command text is to mention the type and name of the SP
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_User_SelectAll";
+            //command.CommandType = CommandType.StoredProcedure;
+            //command.CommandText = "PR_User_SelectAll";
+
+            if (string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Email) && string.IsNullOrEmpty(MobileNo))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_SelectAll";
+            }
+            else
+            {
+                // If any filter → call Search
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_Search";
+
+                command.Parameters.AddWithValue("@UserName", string.IsNullOrEmpty(UserName) ? "" : UserName);
+                command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(Email) ? "" : Email);
+                command.Parameters.AddWithValue("@MobileNo", string.IsNullOrEmpty(MobileNo) ? "" : MobileNo);
+            }
+
 
             //reader is used to read the data from the command
             SqlDataReader reader = command.ExecuteReader();
@@ -53,15 +75,23 @@ namespace HMS.Controllers
             DataTable table = new DataTable();
             table.Load(reader);
 
+            ViewBag.UserName = UserName;
+            ViewBag.Email = Email;
+            ViewBag.MobileNo = MobileNo;
+
             return View(table);
         }
         #endregion
 
         #region DeleteUser
-        public IActionResult UserDelete(int UserID)
+        public IActionResult UserDelete(string UserID)
         {
             try
             {
+                // 🔓 Decrypt the UserID first
+                //int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
+                string decodedUserId = HttpUtility.UrlDecode(UserID); // Decode first
+                int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(decodedUserId));
                 string connectionString = _configuration.GetConnectionString("MyConnectionString");
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -69,17 +99,22 @@ namespace HMS.Controllers
                     SqlCommand command = connection.CreateCommand();
                     command.CommandType = CommandType.StoredProcedure;
                     command.CommandText = "PR_User_DeleteByPK";
-                    command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
+                    command.Parameters.Add("@UserID", SqlDbType.Int).Value = decryptedUserId;
 
                     command.ExecuteNonQuery();
                 }
 
-                TempData["SuccessMessage"] = "User deleted successfully!";
+                TempData["SuccessMessage"] = "✅ User deleted successfully!";
+                return RedirectToAction("UserList");
+            }
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this user. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("UserList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the user: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the user: " + ex.Message;
                 return RedirectToAction("UserList");
             }
         }
@@ -124,20 +159,15 @@ namespace HMS.Controllers
 
         [HttpGet]
 
-        public IActionResult UserAddEdit(int? UserID)
+        public IActionResult UserAddEdit(string? UserID)
         {
-            //if (UserID == null)
-            //{
-            //    //var m = new UserModel
-            //    //{
-            //    //};
-            //    return View(new UserModel());
-            //}
-
+            
             UserModel model = new UserModel();
 
             if(UserID != null)
             {
+                var decryptedUserId = HMS.Helpers.UrlEncryptor.Decrypt(UserID);
+                int userIdInt = Convert.ToInt32(decryptedUserId);
                 string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
                 SqlConnection sqlConnection = new SqlConnection(ConnectionString);
                 sqlConnection.Open();
@@ -145,7 +175,7 @@ namespace HMS.Controllers
                 SqlCommand command = sqlConnection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "PR_User_SelectByPK";
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
+                command.Parameters.Add("@UserID", SqlDbType.Int).Value = userIdInt;
 
                 //we got the id now we have to load its all data 
                 SqlDataReader reader = command.ExecuteReader();
@@ -168,6 +198,66 @@ namespace HMS.Controllers
             return View(model);
         }
 
+        #endregion
+
+        #region UserLogin
+
+        public IActionResult UserLogin(UserLoginModel userLoginModel)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    string connectionString = this._configuration.GetConnectionString("MyConnectionString");
+                    SqlConnection sqlConnection = new SqlConnection(connectionString);
+                    sqlConnection.Open();
+                    SqlCommand sqlCommand = sqlConnection.CreateCommand();
+                    sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
+                    sqlCommand.CommandText = "PR_User_ValidateLogin";
+                    sqlCommand.Parameters.Add("@UserName", SqlDbType.VarChar).Value = userLoginModel.UserName;
+                    sqlCommand.Parameters.Add("@Password", SqlDbType.VarChar).Value = userLoginModel.Password;
+                    SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                    DataTable dataTable = new DataTable();
+                    dataTable.Load(sqlDataReader);
+                    if (dataTable.Rows.Count > 0)
+                    {
+                        foreach (DataRow dr in dataTable.Rows)
+                        {
+                            HttpContext.Session.SetString("UserID", dr["UserID"].ToString());
+                            HttpContext.Session.SetString("UserName", dr["UserName"].ToString());
+                            HttpContext.Session.SetString("EmailAddress", dr["Email"].ToString());
+                        }
+                        TempData["SuccessMessage"] = "Login successful! Welcome " + userLoginModel.UserName;
+                        return RedirectToAction("Dashboard", "Home");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Invalid username or password.";
+                        return RedirectToAction("Login", "User");
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TempData["ErrorMessage"] = e.Message;
+            }
+
+            return RedirectToAction("Login");
+        }
+        public IActionResult Login()
+        {
+            return View();
+        }
+        #endregion
+
+        #region UserLogout
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            TempData["SuccessMessage"] = "Logout successful!";
+            return RedirectToAction("Login", "User");
+        }
         #endregion
 
     }

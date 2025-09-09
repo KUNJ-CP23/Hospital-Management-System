@@ -1,7 +1,13 @@
-﻿using HMS.Models;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using HMS.Helpers;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HMS.Controllers
 {
@@ -16,7 +22,7 @@ namespace HMS.Controllers
         #endregion
 
         #region SelectAllDepartment
-        public IActionResult DepartmentList()
+        public IActionResult DepartmentList(string DepartmentName="")
         {
 
             string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
@@ -26,13 +32,26 @@ namespace HMS.Controllers
 
             SqlCommand command = sqlConnection.CreateCommand();
 
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_Department_SelectAll";
+            if (string.IsNullOrEmpty(DepartmentName))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Department_SelectAll";
+            }
+            else
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Department_Search";
+
+                command.Parameters.AddWithValue("@DepartmentName", DepartmentName);
+            }
+
 
             SqlDataReader reader = command.ExecuteReader();
 
             DataTable table = new DataTable();
             table.Load(reader);
+
+            ViewBag.DepartmentName = DepartmentName;
 
             return View(table);
         }
@@ -40,11 +59,13 @@ namespace HMS.Controllers
         #endregion
 
         #region DeleteDepartment
-
-        public IActionResult DepartmentDelete(int DepartmentID)
+        public IActionResult DepartmentDelete(string DepartmentID)
         {
             try
             {
+                // 🔓 Decrypt the DepartmentID first
+                int decryptedDeptId = Convert.ToInt32(UrlEncryptor.Decrypt(DepartmentID));
+
                 string connectionString = _configuration.GetConnectionString("MyConnectionString");
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -52,24 +73,30 @@ namespace HMS.Controllers
                     SqlCommand command = connection.CreateCommand();
                     command.CommandType = CommandType.StoredProcedure;
                     command.CommandText = "PR_Department_DeleteByPK";
-                    command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
+                    command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = decryptedDeptId;
 
                     command.ExecuteNonQuery();
                 }
 
-                TempData["SuccessMessage"] = "Department deleted successfully!";
+                TempData["SuccessMessage"] = "✅ Department deleted successfully!";
+                return RedirectToAction("DepartmentList");
+            }
+            catch (SqlException ex) when (ex.Number == 547) // FK constraint
+            {
+                TempData["ErrorMessage"] = "❌ Cannot delete this department. It is referenced somewhere else (foreign key constraint).";
                 return RedirectToAction("DepartmentList");
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An error occurred while deleting the department: " + ex.Message;
+                TempData["ErrorMessage"] = "❌ An error occurred while deleting the department: " + ex.Message;
                 return RedirectToAction("DepartmentList");
             }
         }
 
+
         #endregion
 
-        #region Add Department
+        #region AddDepartment
 
         [HttpPost]
 
@@ -103,36 +130,71 @@ namespace HMS.Controllers
         }
         #endregion
 
-        #region Edit Department
-        public IActionResult DepartmentAddEdit(int? DepartmentID)
+        #region EditDepartment
+
+        [HttpGet]
+        public IActionResult DepartmentAddEdit(string? DepartmentID)
         {
+            
             DepartmentModel model = new DepartmentModel();
 
             if (DepartmentID != null)
             {
+                // 🔓 Decrypt DepartmentID
+                var decryptedDeptId = HMS.Helpers.UrlEncryptor.Decrypt(DepartmentID);
+                int deptIdInt = Convert.ToInt32(decryptedDeptId);
+
                 string ConnectionString = this._configuration.GetConnectionString("MyConnectionString");
-                SqlConnection sqlConnection = new SqlConnection(ConnectionString);
-                sqlConnection.Open();
-
-                SqlCommand command = sqlConnection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_Department_SelectByPK";
-                command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
-
-                SqlDataReader reader = command.ExecuteReader();
-                DataTable table = new DataTable();
-                table.Load(reader);
-
-                foreach (DataRow dr in table.Rows)
+                using (SqlConnection sqlConnection = new SqlConnection(ConnectionString))
                 {
-                    model.DepartmentID = Convert.ToInt32(dr["DepartmentID"]);
-                    model.DepartmentName = dr["DepartmentName"].ToString();
-                    model.Description = dr["Description"].ToString();
-                    model.UserID = Convert.ToInt32(dr["UserID"]);
-                    model.IsActive = Convert.ToBoolean(dr["IsActive"]);
+                    sqlConnection.Open();
+
+                    SqlCommand command = sqlConnection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_Department_SelectByPK";
+                    command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = deptIdInt;
+
+                    SqlDataReader reader = command.ExecuteReader();
+                    DataTable table = new DataTable();
+                    table.Load(reader);
+
+                    foreach (DataRow dr in table.Rows)
+                    {
+                        model.DepartmentID = Convert.ToInt32(dr["DepartmentID"]);
+                        model.DepartmentName = dr["DepartmentName"].ToString();
+                        model.Description = dr["Description"].ToString();
+                        model.UserID = Convert.ToInt32(dr["UserID"]);
+                        model.IsActive = Convert.ToBoolean(dr["IsActive"]);
+                    }
                 }
             }
+            UserDropDown();
             return View(model);
+        }
+
+        #endregion
+
+        #region USER DROPDOWN
+        public void UserDropDown()
+        {
+            string connectionString = this._configuration.GetConnectionString("MyConnectionString");
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            SqlCommand command2 = connection.CreateCommand();
+            command2.CommandType = System.Data.CommandType.StoredProcedure;
+            command2.CommandText = "PR_User_DropdownForUser";
+            SqlDataReader reader2 = command2.ExecuteReader();
+            DataTable dataTable2 = new DataTable();
+            dataTable2.Load(reader2);
+            List<UserDropDownModel> userList = new List<UserDropDownModel>();
+            foreach (DataRow data in dataTable2.Rows)
+            {
+                UserDropDownModel model = new UserDropDownModel();
+                model.UserID = Convert.ToInt32(data["UserID"]);
+                model.UserName = data["UserName"].ToString();
+                userList.Add(model);
+            }
+            ViewBag.UserList = userList;
         }
         #endregion
     }

@@ -1,3 +1,134 @@
-﻿<h2>from doctordepartment add edit
+﻿@model HMS.Models.DoctorDepartmentModel
 
-</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DoctorDepartment Add/Edit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card-header {
+            background-color: #25317d;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-actions a {
+            margin-left: 8px;
+        }
+
+        .breadcrumb-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item a {
+            text-decoration: none;
+            color: #25317d;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mt-1">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-container">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Dashboard">Hospital Management</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a asp-controller="DoctorDepartment" asp-action="DoctorDepartmentList">Doctor Department</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                @(Model.DoctorDepartmentID == 0 ? "Add" : "Edit")
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            @(Model.DoctorDepartmentID == 0 ? "DoctorDepartment Add" : "DoctorDepartment Edit")
+                        </h4>
+                        <div class="header-actions">
+                            <a asp-controller="Home" asp-action="Dashboard" class="btn btn-sm btn-outline-light">Dashboard</a>
+                            <a asp-controller="DoctorDepartment" asp-action="DoctorDepartmentList" class="btn btn-sm btn-outline-light">Back to List</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form asp-controller="DoctorDepartment" asp-action="DoctorDepartmentAddEdit" method="post">
+                            <input asp-for="DoctorDepartmentID" hidden />
+
+                            <div class="mb-3">
+                                <label asp-for="DoctorID" class="form-label">Doctor</label>
+                                <select asp-for="DoctorID" class="form-select"
+                                        asp-items="@(ViewBag.DoctorList != null ? new SelectList(ViewBag.DoctorList, "DoctorID", "Name") : new List<SelectListItem>())"
+                                            >
+                                    <option value="">Select Doctor</option>
+                                </select>
+                                <span asp-validation-for="DoctorID" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="DepartmentID" class="form-label">Department</label>
+                                <select asp-for="DepartmentID" class="form-select"
+                                        asp-items="@(ViewBag.DepartmentList != null ? new SelectList(ViewBag.DepartmentList, "DepartmentID", "DepartmentName") : new List<SelectListItem>())"
+                                        >
+                                    <option value="">Select Department</option>
+                                </select>
+                                <span asp-validation-for="DepartmentID" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="UserID" class="form-label">User</label>
+                                <select asp-for="UserID" class="form-select"
+                                        asp-items="@(ViewBag.UserList != null ? new SelectList(ViewBag.UserList, "UserID", "UserName") : new List<SelectListItem>())"
+                                        >
+                                    <option value="">Select User</option>
+                                </select>
+                                <span asp-validation-for="UserID" class="text-danger"></span>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-outline-success">Save</button>
+                                <a asp-controller="DoctorDepartment" asp-action="DoctorDepartmentList" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+}
