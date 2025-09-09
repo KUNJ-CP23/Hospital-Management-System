@@ -40,5 +40,3 @@ app.MapControllerRoute(
 
 
 app.Run();
-
-//djcnak
