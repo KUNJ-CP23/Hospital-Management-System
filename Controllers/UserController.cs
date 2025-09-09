@@ -227,12 +227,12 @@ namespace HMS.Controllers
                             HttpContext.Session.SetString("UserName", dr["UserName"].ToString());
                             HttpContext.Session.SetString("EmailAddress", dr["Email"].ToString());
                         }
-                        TempData["SuccessMessage"] = "Login successful! Welcome " + userLoginModel.UserName;
+                        TempData["LoginToast"] = "Login successful! Welcome " + userLoginModel.UserName;
                         return RedirectToAction("Dashboard", "Home");
                     }
                     else
                     {
-                        TempData["ErrorMessage"] = "Invalid username or password.";
+                        TempData["LoginError"] = "Invalid username or password.";
                         return RedirectToAction("Login", "User");
                     }
 
@@ -240,7 +240,7 @@ namespace HMS.Controllers
             }
             catch (Exception e)
             {
-                TempData["ErrorMessage"] = e.Message;
+                TempData["LoginError"] = e.Message;
             }
 
             return RedirectToAction("Login");
@@ -255,7 +255,7 @@ namespace HMS.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            TempData["SuccessMessage"] = "Logout successful!";
+            TempData["LoginToast"] = "Logout successful!";
             return RedirectToAction("Login", "User");
         }
         #endregion
