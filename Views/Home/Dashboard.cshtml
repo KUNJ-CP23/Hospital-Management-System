@@ -1,4 +1,4 @@
-﻿@model HMS.Models.DashboardModel
+﻿@* @model HMS.Models.DashboardModel
 @{
     ViewBag.Title = "Dashboard";
 }
@@ -70,6 +70,148 @@
                     @Model.DoctorsCount,
                     @Model.DepartmentsCount,
                     @Model.PatientsCount
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',   // Users
+                    'rgba(255, 99, 132, 0.7)',   // Doctors
+                    'rgba(255, 206, 86, 0.7)',   // Departments
+                    'rgba(75, 192, 192, 0.7)'    // Patients
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.raw;
+                            return context.label + ': ' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<!-- Hover Styling -->
+<style>
+    .dashboard-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 15px;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+</style> *@
+
+@model HMS.Models.DashboardModel
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">📊 Dashboard Overview</h2>
+
+    <!-- Top Row (3 Cards) -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <a href="@Url.Action("UserList", "User")" class="text-decoration-none">
+                <div class="card text-center shadow-lg border-0 dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Users</h5>
+                        <p class="card-text display-6 fw-bold">@Model.UsersCount</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("DoctorList", "Doctor")" class="text-decoration-none">
+                <div class="card text-center shadow-lg border-0 dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger">Doctors</h5>
+                        <p class="card-text display-6 fw-bold">@Model.DoctorsCount</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("DepartmentList", "Department")" class="text-decoration-none">
+                <div class="card text-center shadow-lg border-0 dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">Departments</h5>
+                        <p class="card-text display-6 fw-bold">@Model.DepartmentsCount</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Second Row (2 Cards) -->
+    <div class="row g-4 mb-5 justify-content-center">
+        <div class="col-md-4">
+            <a href="@Url.Action("PatientList", "Patient")" class="text-decoration-none">
+                <div class="card text-center shadow-lg border-0 dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Patients</h5>
+                        <p class="card-text display-6 fw-bold">@Model.PatientsCount</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("AppointmentList", "Appointment")" class="text-decoration-none">
+                <div class="card text-center shadow-lg border-0 dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">Appointments</h5>
+                        <p class="card-text display-6 fw-bold">@Model.AppointmentsCount</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Chart -->
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-lg border-0">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-4">Distribution Overview</h5>
+                <canvas id="dashboardPieChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var ctx = document.getElementById('dashboardPieChart').getContext('2d');
+    var dashboardPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Doctors', 'Departments', 'Patients','Appointments'],
+            datasets: [{
+                data: [
+                    @Model.DoctorsCount,
+                    @Model.DepartmentsCount,
+                    @Model.PatientsCount,
+                    @Model.AppointmentsCount
                 ],
                 backgroundColor: [
                     'rgba(54, 162, 235, 0.7)',   // Users

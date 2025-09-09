@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
+using TagHelper;
 
 namespace HMS.Controllers
 {
+    [CheckAccess]
     public class HomeController : Controller
     {
         private IConfiguration _configuration;
@@ -33,6 +35,7 @@ namespace HMS.Controllers
                         model.DoctorsCount = reader["DoctorsCount"] != DBNull.Value ? Convert.ToInt32(reader["DoctorsCount"]) : 0;
                         model.DepartmentsCount = reader["DepartmentsCount"] != DBNull.Value ? Convert.ToInt32(reader["DepartmentsCount"]) : 0;
                         model.PatientsCount = reader["PatientsCount"] != DBNull.Value ? Convert.ToInt32(reader["PatientsCount"]) : 0;
+                        model.AppointmentsCount = reader["AppointmentsCount"] != DBNull.Value ? Convert.ToInt32(reader["AppointmentsCount"]) : 0;
                     }
                 }
             }

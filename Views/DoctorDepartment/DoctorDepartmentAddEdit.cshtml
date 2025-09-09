@@ -86,7 +86,7 @@
                                 <label asp-for="DoctorID" class="form-label">Doctor</label>
                                 <select asp-for="DoctorID" class="form-select"
                                         asp-items="@(ViewBag.DoctorList != null ? new SelectList(ViewBag.DoctorList, "DoctorID", "Name") : new List<SelectListItem>())"
-                                        required>
+                                            >
                                     <option value="">Select Doctor</option>
                                 </select>
                                 <span asp-validation-for="DoctorID" class="text-danger"></span>
@@ -96,7 +96,7 @@
                                 <label asp-for="DepartmentID" class="form-label">Department</label>
                                 <select asp-for="DepartmentID" class="form-select"
                                         asp-items="@(ViewBag.DepartmentList != null ? new SelectList(ViewBag.DepartmentList, "DepartmentID", "DepartmentName") : new List<SelectListItem>())"
-                                        required>
+                                        >
                                     <option value="">Select Department</option>
                                 </select>
                                 <span asp-validation-for="DepartmentID" class="text-danger"></span>
@@ -106,7 +106,7 @@
                                 <label asp-for="UserID" class="form-label">User</label>
                                 <select asp-for="UserID" class="form-select"
                                         asp-items="@(ViewBag.UserList != null ? new SelectList(ViewBag.UserList, "UserID", "UserName") : new List<SelectListItem>())"
-                                        required>
+                                        >
                                     <option value="">Select User</option>
                                 </select>
                                 <span asp-validation-for="UserID" class="text-danger"></span>
