@@ -1,93 +1,280 @@
 ﻿@using System.Data;
 @model System.Data.DataTable;
+@using HMS.Helpers;
 
-<div class="pagetitle">
-    <h1>Doctor List</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-            <li class="breadcrumb-item">Doctor</li>
-            <li class="breadcrumb-item active">List</li>
-        </ol>
-    </nav>
-</div><!-- End Page Title -->
+<style>
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(to right, #f7f9fc, #eef1f6);
+        color: #333;
+    }
 
-<section class="section">
-    <div class="row">
-        <div class="col-lg-12">
+    .main-container {
+        max-width: 1100px;
+        margin: 6px auto;
+        padding: 0px 10px 0px 10px;
+    }
 
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Doctor Table</h5>
+    .doctorlist-header {
+        background: #ffffff;
+        padding: 15px 25px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
+    }
 
-                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-striped table-hover table-bordered align-middle">
-                            <thead class="table-dark text-center">
-                                <tr>
-                                    <th>DoctorID</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Qualification</th>
-                                    <th>Specialization</th>
-                                    <th>IsActive</th>
-                                    @* <th>Created</th>
-                                    <th>Modified</th> *@
-                                    <th>UserName</th>
-                                    <th>Edit/Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (DataRow dr in Model.Rows)
-                                {
-                                    <tr>
-                                        <td>@dr["DoctorID"]</td>
-                                        <td>@dr["Name"]</td>
-                                        <td>@dr["Phone"]</td>
-                                        <td>@dr["Email"]</td>
-                                        <td>@dr["Qualification"]</td>
-                                        <td>@dr["Specialization"]</td>
-                                        <td>@dr["IsActive"]</td>
-                                        @* <td>@Convert.ToDateTime(dr["Created"]).ToString("dd/MM/yyyy")</td>
-                                        <td>@Convert.ToDateTime(dr["Modified"]).ToString("dd/MM/yyyy")</td> *@
-                                        <td>@dr["UserName"]</td>
-                                        <td class="text-center">
-                                            <div class="btn-group" role="group">
-                                                <a href="@Url.Action("DoctorAddEdit", "Doctor", new { DoctorID = dr["DoctorID"] })"
-                                                   class="btn btn-outline-primary btn-sm"
-                                                   title="Edit Doctor">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </a>
-                                                <button type="button"
-                                                        class="btn btn-outline-danger btn-sm delete-doctor"
-                                                        data-id="@dr["DoctorID"]"
-                                                        title="Delete Doctor">
-                                                    <i class="bi bi-trash-fill"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+    .doctorlist-title {
+        font-weight: 600;
+        color: #2a5d9f;
+        margin: 0;
+    }
 
-                </div>
-            </div>
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
 
+    .btn-custom {
+        border-radius: 6px;
+        font-size: 14px;
+        padding: 6px 14px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #2a5d9f;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #234b82;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+    }
+
+        .btn-secondary:hover {
+            background-color: #565e64;
+        }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+
+    .btn-dan {
+        color: #dc3545;
+        border: 2px solid #dc3545;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-dan:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+    .btn-war {
+        color: dodgerblue;
+        border: 2px solid dodgerblue;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-war:hover {
+            background-color: dodgerblue;
+            color: #fff;
+        }
+
+    .search-row {
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .search-row input {
+            border-radius: 6px;
+        }
+
+        .search-row button {
+            border-radius: 6px;
+            padding: 6px 16px;
+        }
+
+    .table-container {
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0px 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .table thead {
+        background-color: #2a5d9f;
+        color: #fff;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f8f9fb;
+    }
+
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .alert {
+        margin: 10px auto;
+        width: 90%;
+        border-radius: 8px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="main-container">
+    <!-- Header -->
+    <div class="doctorlist-header">
+        <h2 class="doctorlist-title">Doctor List</h2>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="@Url.Action("DoctorAddEdit", "Doctor")" class="btn btn-primary btn-custom">
+            <i class="bi bi-plus-circle"></i> Add Doctor
+        </a>
+        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-secondary btn-custom">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="btn btn-success btn-custom"
+           asp-controller="ExportToExcel"
+           asp-action="ExportToExcel"
+           asp-route-sp="PR_Doctor_SelectAll">
+            <i class="bi bi-file-earmark-excel"></i> Export to Excel
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold auto-hide">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold auto-hide">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- jQuery for auto-hide alerts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            setTimeout(function () {
+                $(".auto-hide").slideUp(600);
+            }, 3000);
+        });
+    </script>
+
+    <!-- Search -->
+    <form method="get" asp-action="DoctorList" class="search-row row g-2">
+        <div class="col-md-3">
+            <input type="text" name="Name" class="form-control"
+                   placeholder="Doctor Name" value="@ViewBag.Name" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="Email" class="form-control"
+                   placeholder="Email" value="@ViewBag.Email" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="Phone" class="form-control"
+                   placeholder="Phone" value="@ViewBag.Phone" />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a href="@Url.Action("DoctorList")" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    <!-- Doctor Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Qualification</th>
+                        <th>Specialization</th>
+                        @* <th>IsActive</th>
+                        <th>UserName</th> *@
+                        <th>Edit/Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int srNo = 1;
+                    }
+                    @foreach (DataRow dr in Model.Rows)
+                    {
+                        var encryptedId = UrlEncryptor.Encrypt(dr["DoctorID"].ToString());
+                        <tr>
+                            <td>@srNo</td>
+                            <td>@dr["Name"]</td>
+                            <td>@dr["Phone"]</td>
+                            <td>@dr["Email"]</td>
+                            <td>@dr["Qualification"]</td>
+                            <td>@dr["Specialization"]</td>
+                            @* <td>@dr["IsActive"]</td>
+                            <td>@dr["UserName"]</td> *@
+                            <td>
+                                <a href="@Url.Action("DoctorAddEdit", "Doctor", new { DoctorID = encryptedId })"
+                                   class="btn btn-war btn-sm"
+                                   title="Edit Doctor">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-dan btn-sm delete-doctor"
+                                        data-id="@encryptedId"
+                                        title="Delete Doctor">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        srNo++;
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
-</section>
+</div>
 
-
+<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".delete-doctor").forEach(button => {
             button.addEventListener("click", function () {
                 const doctorId = this.getAttribute("data-id");
-
                 Swal.fire({
                     title: "Are you sure?",
                     text: "You won't be able to revert this!",
@@ -105,3 +292,8 @@
         });
     });
 </script>
+
+@* <th>Created</th>
+<th>Modified</th> *@
+@* <td>@Convert.ToDateTime(dr["Created"]).ToString("dd/MM/yyyy")</td>
+<td>@Convert.ToDateTime(dr["Modified"]).ToString("dd/MM/yyyy")</td> *@
