@@ -107,6 +107,35 @@ namespace HMS.Controllers
                 SqlConnection sqlConnection = new SqlConnection(ConnectionString);
                 sqlConnection.Open();
 
+                // Handle File Upload
+
+                string fileName = patientModel.ImagePath; // old image as it is rye if user havent edited
+
+                //agar image no path nay hoi to new image upload krdo
+                if (patientModel.PatientImage != null && patientModel.PatientImage.Length > 0)
+                {
+                    //combine method current directory and folder path ne combine kare che
+                    // "wwwroot/uploads/patients" folder ma upload thase
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/patients");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    //guid is for giving unique name to the file every time
+                    fileName = Guid.NewGuid().ToString() + Path.GetExtension(patientModel.PatientImage.FileName);
+
+                    //aa actual path che j store thase
+                    string filePath = Path.Combine(uploadsFolder, fileName);
+
+                    //stream is used to read and write bytes to a file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        patientModel.PatientImage.CopyTo(stream);
+                    }
+                }
+                //File upload end
+
                 SqlCommand command = sqlConnection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
                 if (patientModel.PatientID == 0)
@@ -128,6 +157,8 @@ namespace HMS.Controllers
                 command.Parameters.AddWithValue("@State", patientModel.State);
                 command.Parameters.AddWithValue("@IsActive", patientModel.IsActive);
                 command.Parameters.AddWithValue("@UserID", patientModel.UserID);
+                command.Parameters.AddWithValue("@ImagePath", (object)fileName ?? DBNull.Value);
+
                 command.ExecuteNonQuery();
                 return RedirectToAction("PatientList");
             }
@@ -172,6 +203,10 @@ namespace HMS.Controllers
                         model.State = dr["State"].ToString();
                         model.IsActive = Convert.ToBoolean(dr["IsActive"]);
                         model.UserID = Convert.ToInt32(dr["UserID"]);
+                        if (dr["ImagePath"] != DBNull.Value)
+                        {
+                            model.ImagePath = dr["ImagePath"].ToString();
+                        }
                     }
                 }
             }

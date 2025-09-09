@@ -41,6 +41,10 @@ namespace HMS.Models
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public int UserID { get; set; }
+
+        // New Properties for Image Upload
+        public string? ImagePath { get; set; }
+        public IFormFile PatientImage { get; set; }
     }
     public class PatientDropDownModel
     {
