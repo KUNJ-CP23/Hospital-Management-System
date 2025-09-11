@@ -148,7 +148,7 @@ namespace HMS.Controllers
                     command.Parameters.Add("@PatientID", SqlDbType.Int).Value = patientModel.PatientID;
                 }
                 command.Parameters.AddWithValue("@Name", patientModel.Name);
-                command.Parameters.AddWithValue("@DateOfBirth", patientModel.DateOfBirth);
+                command.Parameters.AddWithValue("@DateOfBirth", patientModel.DateOfBirth?.ToString("yyyy-MM-dd"));
                 command.Parameters.AddWithValue("@Gender", patientModel.Gender);
                 command.Parameters.AddWithValue("@Email", patientModel.Email);
                 command.Parameters.AddWithValue("@Phone", patientModel.Phone);
@@ -170,7 +170,6 @@ namespace HMS.Controllers
         [HttpGet]
         public IActionResult PatientAddEdit(int? PatientID)
         {
-            UserKaDropDown(); // load User dropdown
             PatientModel model = new PatientModel();
 
             if (PatientID != null)
@@ -210,6 +209,7 @@ namespace HMS.Controllers
                     }
                 }
             }
+            UserKaDropDown(); // load User dropdown
             return View(model);
         }
 

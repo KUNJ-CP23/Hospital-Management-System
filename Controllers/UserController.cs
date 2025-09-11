@@ -89,7 +89,6 @@ namespace HMS.Controllers
             try
             {
                 // 🔓 Decrypt the UserID first
-                //int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
                 string decodedUserId = HttpUtility.UrlDecode(UserID); // Decode first
                 int decryptedUserId = Convert.ToInt32(UrlEncryptor.Decrypt(decodedUserId));
                 string connectionString = _configuration.GetConnectionString("MyConnectionString");

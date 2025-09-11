@@ -59,24 +59,6 @@ namespace HMS.Helpers
                 return null;
             }
         }
-
-        //public static string Decrypt(string encryptedText)
-        //{
-        //    using (Aes aesAlg = Aes.Create())
-        //    {
-        //        aesAlg.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-        //        aesAlg.IV = new byte[16];
-
-        //        var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-        //        using (var msDecrypt = new MemoryStream(Convert.FromBase64String(encryptedText)))
-        //        using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-        //        using (var srDecrypt = new StreamReader(csDecrypt))
-        //        {
-        //            return srDecrypt.ReadToEnd();
-        //        }
-        //    }
-        //}
         #endregion
     }
 }

@@ -279,7 +279,8 @@
 
                             <div class="mb-3">
                                 <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
-                                <input asp-for="DateOfBirth" class="form-control" type="date" />
+                                <input asp-for="DateOfBirth" class="form-control" type="date"
+                                       value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" />
                                 <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                             </div>
 

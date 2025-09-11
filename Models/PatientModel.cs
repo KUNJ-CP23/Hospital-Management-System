@@ -11,7 +11,7 @@ namespace HMS.Models
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Date of Birth is required")]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Gender is required")]
         public string Gender { get; set; }
@@ -44,7 +44,7 @@ namespace HMS.Models
 
         // New Properties for Image Upload
         public string? ImagePath { get; set; }
-        public IFormFile PatientImage { get; set; }
+        public IFormFile? PatientImage { get; set; }
     }
     public class PatientDropDownModel
     {
